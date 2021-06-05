@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QList>
+#include <QtWidgets>
 #include <QMainWindow>
 #include <PaintArea.h>
 
@@ -13,6 +14,7 @@ class MainWindow : public QMainWindow{
                 void save();
                 void penColor();
                 void penWidth();
+                void penWidthCb(int w);
                 void about();
 
         private:
@@ -34,8 +36,14 @@ class MainWindow : public QMainWindow{
                 QAction *aboutAct;
                 QAction *aboutQtAct;
 
+                QToolBar *toolbar;
+                QPushButton *colorButton;
+                QComboBox *widthCb;
+
                 void createActions();
                 void createMenus();
+                void createToolBar();
+
                 bool maybeSave();
                 bool saveFile(const QByteArray &fileFormat);
 

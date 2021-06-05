@@ -12,7 +12,7 @@ class PaintArea : public QWidget {
         private:
                 bool modified;
                 QColor penColor;
-                bool penWidth;
+                int penWidth;
                 bool isdrawing;
                 QImage image;
                 QPoint curPoint;

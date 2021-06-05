@@ -85,20 +85,20 @@ void PaintArea::clearImage(){
 }
 
 void PaintArea::print(){
-#if QT_CONFIG(printdialog)
-    QPrinter printer(QPrinter::HighResolution);
+        #if QT_CONFIG(printdialog)
+                QPrinter printer(QPrinter::HighResolution);
 
-    QPrintDialog printDialog(&printer, this);
-    if (printDialog.exec() == QDialog::Accepted) {
-        QPainter painter(&printer);
-        QRect rect = painter.viewport();
-        QSize size = image.size();
-        size.scale(rect.size(), Qt::KeepAspectRatio);
-        painter.setViewport(rect.x(), rect.y(), size.width(), size.height());
-        painter.setWindow(image.rect());
-        painter.drawImage(0, 0, image);
-    }
-#endif
+                QPrintDialog printDialog(&printer, this);
+                if (printDialog.exec() == QDialog::Accepted) {
+                        QPainter painter(&printer);
+                        QRect rect = painter.viewport();
+                        QSize size = image.size();
+                        size.scale(rect.size(), Qt::KeepAspectRatio);
+                        painter.setViewport(rect.x(), rect.y(), size.width(), size.height());
+                        painter.setWindow(image.rect());
+                        painter.drawImage(0, 0, image);
+                }
+        #endif
 }
 
 void PaintArea::setPenColor(const QColor &color){
