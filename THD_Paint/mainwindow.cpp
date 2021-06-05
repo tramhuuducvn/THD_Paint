@@ -3,20 +3,27 @@
 #include "mainwindow.h"
 #include "PaintArea.h"
 
+QColor c = QColor(239, 204, 153);
+QColor w = QColor(255, 255, 255);
+
 MainWindow::MainWindow(){
         paintArea = new PaintArea;
         setCentralWidget(paintArea);
+
+        QPixmap pix = QPixmap("img/pencil_icon.png");
+        this->setCursor(QCursor(pix, 0, pix.height()));
 
         createActions();
         createMenus();
         createToolBar();
 
+        this->pencilButton->setPalette(QPalette(c));
         this->setWindowIcon(QIcon("img/paint_icon.png"));
         this->setWindowTitle(tr("THD Paint Application"));
         this->resize(700, 700);
 }
 
-void MainWindow::closeEvent(QCloseEvent *event){
+void MainWindow::closeEvent(QCloseEvent *event) {
         if(maybeSave()) {
                 event->accept();
         }
@@ -25,6 +32,7 @@ void MainWindow::closeEvent(QCloseEvent *event){
         }
 }
 
+// SLOT event ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 void MainWindow::open() {
         if(maybeSave()){
                 QString fileName = QFileDialog::getOpenFileName(this,  tr("Open File"), QDir::currentPath());
@@ -66,9 +74,54 @@ void MainWindow::penWidthCb(int w){
         this->paintArea->setPenWidth(w + 1);
 }
 
+void MainWindow::pencil() {
+        QPixmap pix = QPixmap("img/pencil_icon.png");
+        this->setCursor(QCursor(pix, 0, pix.height()));
+        this->paintArea->setPenColor(this->colorButton->palette().button().color());
+        //-------------------------------------------------------------------------------------------------------------------
+        this->pencilButton->setPalette(QPalette(c));
+        this->eraserButton->setPalette(QPalette(w));
+        this->rectangleButton->setPalette(QPalette(w));
+        this->ellipseButton->setPalette(QPalette(w));
+}
+
+void MainWindow::eraser() {
+        QPixmap pix = QPixmap("img/eraser_icon.png");
+        this->setCursor(QCursor(pix, 0, pix.height()));
+        this->paintArea->setPenColor(w);
+        //-------------------------------------------------------------------------------------------------------------------
+        this->pencilButton->setPalette(QPalette(w));
+        this->eraserButton->setPalette(QPalette(c));
+        this->rectangleButton->setPalette(QPalette(w));
+        this->ellipseButton->setPalette(QPalette(w));
+}
+
+void MainWindow::rectangle() {
+//        QPixmap pix = QPixmap("img/rectangle_icon.png");
+        this->setCursor(QCursor(Qt::CrossCursor));
+        this->paintArea->setPenColor(this->colorButton->palette().button().color());
+        //-------------------------------------------------------------------------------------------------------------------
+        this->pencilButton->setPalette(QPalette(w));
+        this->eraserButton->setPalette(QPalette(w));
+        this->rectangleButton->setPalette(QPalette(c));
+        this->ellipseButton->setPalette(QPalette(w));
+}
+
+void MainWindow::ellipse() {
+//        QPixmap pix = QPixmap("img/ellipse_icon.png");
+        this->setCursor(QCursor(Qt::CrossCursor));
+        this->paintArea->setPenColor(this->colorButton->palette().button().color());
+        //-------------------------------------------------------------------------------------------------------------------
+        this->pencilButton->setPalette(QPalette(w));
+        this->eraserButton->setPalette(QPalette(w));
+        this->rectangleButton->setPalette(QPalette(w));
+        this->ellipseButton->setPalette(QPalette(c));
+}
+
 void MainWindow::about(){
         QMessageBox::about(this, tr("About me"), tr("<p><center> 19120484_Trầm Hữu Đức </center></p>"));
 }
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void MainWindow::createActions() {
         openAct = new QAction(tr("Open..."), this);
@@ -157,9 +210,27 @@ void MainWindow::createToolBar(){
         this->toolbar->addWidget(this->widthCb);
 
         this->toolbar->addSeparator();//----------------------------------------------------------------------
+        this->toolbar->addSeparator();//----------------------------------------------------------------------
+
+        this->pencilButton = new QPushButton(QIcon("img/pencil_icon.png"), "pencil", NULL);
+        this->toolbar->addWidget(this->pencilButton);
+        connect(this->pencilButton, &QPushButton::clicked, this, &MainWindow::pencil);
+
+        this->eraserButton = new QPushButton(QIcon("img/eraser_icon.png"), "eraser", NULL);
+        this->toolbar->addWidget(this->eraserButton);
+        connect(this->eraserButton, &QPushButton::clicked, this, &MainWindow::eraser);
+
+        this->rectangleButton = new QPushButton(QIcon("img/rectangle_icon.png"), "rectangle", NULL);
+        this->toolbar->addWidget(this->rectangleButton);
+        connect(this->rectangleButton, &QPushButton::clicked, this, &MainWindow::rectangle);
+
+        this->ellipseButton = new QPushButton(QIcon("img/ellipse_icon.png"), "ellipse", NULL);
+        this->toolbar->addWidget(this->ellipseButton);
+        connect(this->ellipseButton, &QPushButton::clicked, this, &MainWindow::ellipse);
+
 
         //---------------------------------------------------------------------------------------------------------------------
-        this->addToolBar(Qt::ToolBarArea::LeftToolBarArea, this->toolbar);
+        this->addToolBar(Qt::ToolBarArea::TopToolBarArea, this->toolbar);
         this->toolbar->show();
 }
 

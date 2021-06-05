@@ -17,6 +17,11 @@ class MainWindow : public QMainWindow{
                 void penWidthCb(int w);
                 void about();
 
+                void pencil();
+                void eraser();
+                void rectangle();
+                void ellipse();
+
         private:
                 PaintArea* paintArea;
 
@@ -40,6 +45,11 @@ class MainWindow : public QMainWindow{
                 QPushButton *colorButton;
                 QComboBox *widthCb;
 
+                QPushButton *pencilButton;
+                QPushButton *eraserButton;
+                QPushButton *rectangleButton;
+                QPushButton *ellipseButton;
+
                 void createActions();
                 void createMenus();
                 void createToolBar();
@@ -50,6 +60,7 @@ class MainWindow : public QMainWindow{
 
         protected:
                 void closeEvent(QCloseEvent *event) override;
+//                void mouseMoveEvent(QMouseEvent* event) override;
 
         public :
                 MainWindow();
