@@ -83,6 +83,10 @@ void MainWindow::pencil() {
         this->eraserButton->setPalette(QPalette(w));
         this->rectangleButton->setPalette(QPalette(w));
         this->ellipseButton->setPalette(QPalette(w));
+
+        this->paintArea->setDrawLine(true);
+        this->paintArea->setDrawRect(false);
+        this->paintArea->setDrawEllipse(false);
 }
 
 void MainWindow::eraser() {
@@ -105,6 +109,10 @@ void MainWindow::rectangle() {
         this->eraserButton->setPalette(QPalette(w));
         this->rectangleButton->setPalette(QPalette(c));
         this->ellipseButton->setPalette(QPalette(w));
+
+        this->paintArea->setDrawLine(false);
+        this->paintArea->setDrawRect(true);
+        this->paintArea->setDrawEllipse(false);
 }
 
 void MainWindow::ellipse() {
@@ -116,6 +124,10 @@ void MainWindow::ellipse() {
         this->eraserButton->setPalette(QPalette(w));
         this->rectangleButton->setPalette(QPalette(w));
         this->ellipseButton->setPalette(QPalette(c));
+
+        this->paintArea->setDrawLine(false);
+        this->paintArea->setDrawRect(false);
+        this->paintArea->setDrawEllipse(true);
 }
 
 void MainWindow::about(){

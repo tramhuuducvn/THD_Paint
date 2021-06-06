@@ -9,21 +9,55 @@
 
 #include "PaintArea.h"
 
+int min(int x, int y){
+        return (x < y) ? x : y;
+}
+
+int max(int x, int y){
+        return (x > y) ? x : y;
+}
+
+
 PaintArea::PaintArea(QWidget *parent) : QWidget(parent) {
         setAttribute(Qt::WA_StaticContents);
         this->setFocusPolicy(Qt::StrongFocus);
 
         modified = false;
         isdrawing =false;
-        shifting = false;
+
+        holdingW = false;
+        holdingS = false;
+        holdingA = false;
+        holdingD = false;
+
+        isdrawLine = true;
+        isdrawRect = false;
+        isdrawEllipse = false;
+
         penWidth = 7;
         penColor = Qt::green;
 }
 
 void PaintArea::drawLine(const QPoint &endPoint){
         QPoint target = QPoint(endPoint.x(), endPoint.y());
-        if(this->shifting){
+
+        if(this->holdingW){
                 target.setY(curPoint.y());
+        }        
+        else if(this->holdingS){
+                target.setX(curPoint.x());
+        }
+        else if(this->holdingA){
+                int x = ( target.x() - target.y() + originPoint.x() + originPoint.y() ) / 2;
+                int y = ( -target.x() + target.y() + originPoint.x() + originPoint.y() ) / 2 ;
+                target.setX(x);
+                target.setY(y);
+        }
+        else if(this->holdingD){
+                int x = ( target.x() + target.y() + originPoint.x() - originPoint.y() ) / 2;
+                int y = ( target.x() + target.y() - originPoint.x() + originPoint.y() ) / 2 ;
+                target.setX(x);
+                target.setY(y);
         }
 
         QPainter painter(&image);
@@ -31,9 +65,69 @@ void PaintArea::drawLine(const QPoint &endPoint){
         painter.drawLine(curPoint, target);
         modified = true;
         int rad = penWidth/2 + 2;
-
         update(QRect(curPoint, target).normalized().adjusted(-rad, -rad, rad, rad));
+        curPoint = target;
+}
 
+void PaintArea::drawRect(const QPoint &endPoint){
+        QPoint target = QPoint(endPoint.x(), endPoint.y());
+
+        if(this->holdingW){
+                target.setY(curPoint.y());
+        }
+        else if(this->holdingS){
+                target.setX(curPoint.x());
+        }
+        else if(this->holdingA){
+                int x = ( target.x() - target.y() + originPoint.x() + originPoint.y() ) / 2;
+                int y = ( -target.x() + target.y() + originPoint.x() + originPoint.y() ) / 2 ;
+                target.setX(x);
+                target.setY(y);
+        }
+        else if(this->holdingD){
+                int x = ( target.x() + target.y() + originPoint.x() - originPoint.y() ) / 2;
+                int y = ( target.x() + target.y() - originPoint.x() + originPoint.y() ) / 2 ;
+                target.setX(x);
+                target.setY(y);
+        }
+
+        QPainter painter(&image);
+        painter.setPen(QPen(penColor, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter.drawLine(curPoint, target);
+        modified = true;
+        int rad = penWidth/2 + 2;
+        update(QRect(curPoint, target).normalized().adjusted(-rad, -rad, rad, rad));
+        curPoint = target;
+}
+
+void PaintArea::drawEllipse(const QPoint &endPoint){
+        QPoint target = QPoint(endPoint.x(), endPoint.y());
+
+        if(this->holdingW){
+                target.setY(curPoint.y());
+        }
+        else if(this->holdingS){
+                target.setX(curPoint.x());
+        }
+        else if(this->holdingA){
+                int x = ( target.x() - target.y() + originPoint.x() + originPoint.y() ) / 2;
+                int y = ( -target.x() + target.y() + originPoint.x() + originPoint.y() ) / 2 ;
+                target.setX(x);
+                target.setY(y);
+        }
+        else if(this->holdingD){
+                int x = ( target.x() + target.y() + originPoint.x() - originPoint.y() ) / 2;
+                int y = ( target.x() + target.y() - originPoint.x() + originPoint.y() ) / 2 ;
+                target.setX(x);
+                target.setY(y);
+        }
+
+        QPainter painter(&image);
+        painter.setPen(QPen(penColor, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter.drawLine(curPoint, target);
+        modified = true;
+        int rad = penWidth/2 + 2;
+        update(QRect(curPoint, target).normalized().adjusted(-rad, -rad, rad, rad));
         curPoint = target;
 }
 
@@ -50,35 +144,78 @@ void PaintArea::resizeImage(QImage *image, const QSize &size){
 }
 
 void PaintArea::mousePressEvent(QMouseEvent *event){
+        this->originPoint = event->pos();
+
         if(event->button() == Qt::LeftButton){
                 this->curPoint = event->pos();
                 this->isdrawing = true;
+
+                if(this->isdrawLine == false){
+                        this->selectionTool = new  SelectionTool(QRubberBand::Rectangle, this);
+                        this->selectionTool->setGeometry(QRect(this->originPoint, QSize()));
+                        this->selectionTool->show();
+                }
         }
 }
 
 void PaintArea::mouseMoveEvent(QMouseEvent *event){
         if((event->buttons() & Qt::LeftButton) && isdrawing){
-                this->drawLine(event->pos());
+                if(this->isdrawLine){
+                        this->drawLine(event->pos());
+                }
+                else{
+                        this->selectionTool->setGeometry(QRect(this->originPoint, event->pos()).normalized());
+                }
         }
 }
 
 void PaintArea::mouseReleaseEvent(QMouseEvent *event){
         if(event->button() == Qt::LeftButton && isdrawing){
-                this->drawLine(event->pos());
+                if(this->isdrawLine){
+                        this->drawLine(event->pos());
+                 }
+                else if(this->isdrawRect){
+                        this->drawRect(event->pos());
+                }
+                if(this->isdrawEllipse){
+                        this->drawEllipse(event->pos());
+                }
+                if(this->isdrawLine == false){
+                        this->selectionTool->close();
+                        this->selectionTool = NULL;
+                }
                 this->isdrawing  = false;
         }
 }
 
 void PaintArea::keyPressEvent(QKeyEvent *event){
-        if(event->key() == Qt::Key_Shift){
-                shifting = true;              
+        if(event->key() == Qt::Key_W){
+                holdingW = true;
+        }
+        else if(event->key() == Qt::Key_S){
+                 holdingS = true;
+        }
+        else if(event->key() == Qt::Key_A){
+                 holdingA = true;
+        }
+        else if(event->key() == Qt::Key_D){
+                 holdingD = true;
         }
 }
 
 
 void PaintArea::keyReleaseEvent(QKeyEvent *event){
-        if(event->key() == Qt::Key_Shift){
-                shifting = false;
+        if(event->key() == Qt::Key_W){
+                holdingW = false;
+        }
+        else if(event->key() == Qt::Key_S){
+                 holdingS = false;
+        }
+        else if(event->key() == Qt::Key_A){
+                 holdingA = false;
+        }
+        else if(event->key() == Qt::Key_D){
+                 holdingD = false;
         }
 }
 
@@ -142,6 +279,29 @@ int PaintArea::getPenWidth() const {
         return this->penWidth;
 }
 
+bool PaintArea::isDrawLine() const {
+    return isdrawLine;
+}
+
+bool PaintArea::isDrawRect() const {
+    return isdrawRect;
+}
+
+bool PaintArea::isDrawEllipse() const {
+    return isdrawEllipse;
+}
+
+void PaintArea::setDrawLine(bool b){
+    this->isdrawLine = b;
+}
+
+void PaintArea::setDrawRect(bool b){
+    this->isdrawRect = b;
+}
+
+void PaintArea::setDrawEllipse(bool b){
+    this->isdrawEllipse = b;
+}
 
 bool PaintArea::openImage(const QString &fileName){
         QImage loadedImage;

@@ -11,11 +11,13 @@ CONFIG += c++11
 
 SOURCES += \
     PaintArea.cpp \
+    SelectionTool.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     PaintArea.h \
+    SelectionTool.h \
     mainwindow.h
 
 FORMS += \

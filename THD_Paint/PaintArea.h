@@ -4,7 +4,8 @@
 #include <QColor>
 #include <QImage>
 #include <QPoint>
-#include <QWidget>
+#include <QtWidgets>
+#include <SelectionTool.h>
 
 class PaintArea : public QWidget {
                 Q_OBJECT
@@ -12,14 +13,25 @@ class PaintArea : public QWidget {
         private:
                 bool modified;
                 bool isdrawing;
-                bool shifting;
+                bool holdingW;
+                bool holdingS;
+                bool holdingA;
+                bool holdingD;
+
+                bool isdrawLine;
+                bool isdrawRect;
+                bool isdrawEllipse;
 
                 QColor penColor;
                 int penWidth;                
                 QImage image;
                 QPoint curPoint;
+                QPoint originPoint;
+                SelectionTool *selectionTool;
 
                 void drawLine(const QPoint& endPoint);
+                void drawRect(const QPoint& endPoint);
+                void drawEllipse(const QPoint& endPoint);
                 void resizeImage(QImage *image, const QSize &size);
 
         protected:
@@ -38,6 +50,7 @@ class PaintArea : public QWidget {
                 void print();
 
         public:
+//                PaintArea();
                 PaintArea(QWidget * parent = 0);
                 bool openImage(const QString &fileName);
                 bool saveImage(const QString &fileName, const char *fileFormat);
@@ -47,6 +60,15 @@ class PaintArea : public QWidget {
                 bool isModified() const;
                 QColor getPenColor() const;
                 int getPenWidth() const;
+
+                bool isDrawLine() const;
+                bool isDrawRect() const;
+                bool isDrawEllipse() const;
+
+                void setDrawLine(bool b);
+                void setDrawRect(bool b);
+                void setDrawEllipse(bool b);
+
 };
 
 #endif // PAINTAREA_H
