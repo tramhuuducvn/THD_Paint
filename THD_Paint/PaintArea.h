@@ -11,6 +11,7 @@ class PaintArea : public QWidget {
                 Q_OBJECT
 
         private:
+                int step;
                 bool modified;
                 bool isdrawing;
                 bool holdingW;
@@ -52,7 +53,6 @@ class PaintArea : public QWidget {
                 void print();
 
         public:
-//                PaintArea();
                 PaintArea(QWidget * parent = 0);
                 bool openImage(const QString &fileName);
                 bool saveImage(const QString &fileName, const char *fileFormat);
@@ -71,6 +71,9 @@ class PaintArea : public QWidget {
                 void setDrawRect(bool b);
                 void setDrawEllipse(bool b);
 
+                int historyDraw();
+                void setStep(int i);
+                int getStep();
 };
 
 #endif // PAINTAREA_H

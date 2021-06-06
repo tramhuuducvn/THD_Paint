@@ -13,6 +13,11 @@ PaintArea::PaintArea(QWidget *parent) : QWidget(parent) {
         setAttribute(Qt::WA_StaticContents);
         this->setFocusPolicy(Qt::StrongFocus);
 
+        this->image = QImage(size(), QImage::Format_RGB32);
+        this->image.fill(QColor(255, 255, 255));
+        this->step = 0;
+        this->historyDraw();
+
         modified = false;
         isdrawing =false;
 
@@ -69,6 +74,7 @@ void PaintArea::drawRect(const QPoint &beginPoint, const QPoint &endPoint){
 
         QPainter painter(&image);
         painter.setPen(penColor);
+        painter.setBrush(QBrush(penColor));
         if((x2 - x1) * (y2 - y1) > 0 ){
                 painter.drawRect( x1, y1, x2 - x1, y2 - y1);
         }
@@ -87,6 +93,7 @@ void PaintArea::drawEllipse(const QPoint &beginPoint, const QPoint &endPoint){
 
         QPainter painter(&image);
         painter.setPen(penColor);
+        painter.setBrush(QBrush(penColor));
         if((x2 - x1) * (y2 - y1) > 0 ){
                 painter.drawEllipse(x1, y1, x2 - x1, y2 - y1);
         }
@@ -159,6 +166,7 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event){
                         this->selectionTool = NULL;
                 }
                 this->isdrawing  = false;
+                historyDraw();
         }
 }
 
@@ -311,4 +319,33 @@ bool PaintArea::saveImage(const QString &fileName, const char *fileFormat){
         }
 }
 
+void PaintArea::setStep(int i){
+        this->step = i;
+}
 
+int PaintArea::getStep(){
+        return this->step;
+}
+
+int PaintArea::historyDraw(){
+        this->step += 1;
+
+        if(this->step > 3){
+                QFile *f1 = new  QFile("history/1");
+                if(f1 != NULL){
+                        f1->remove();
+                }
+               QFile *f2 = new  QFile("history/2");
+               QFile *f3 = new  QFile("history/3");
+               f2->rename("history/1");
+               f3->rename("history/2");
+               this->step -= 1;
+        }
+
+        QString fileName = "history/" + QString::number(this->step);
+        QImage temp = this->image;
+        if(temp.save(fileName, "png")){
+                return this->step;
+        }
+        return 0;
+}

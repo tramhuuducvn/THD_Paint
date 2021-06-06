@@ -16,6 +16,8 @@ class MainWindow : public QMainWindow{
                 void penWidth();
                 void penWidthCb(int w);
                 void about();
+                void undo();
+                void redo();
 
                 void pencil();
                 void eraser();
@@ -50,6 +52,9 @@ class MainWindow : public QMainWindow{
                 QPushButton *rectangleButton;
                 QPushButton *ellipseButton;
 
+                QAction *undoAct;
+                QAction *redoAct;
+
                 void createActions();
                 void createMenus();
                 void createToolBar();
@@ -64,6 +69,7 @@ class MainWindow : public QMainWindow{
 
         public :
                 MainWindow();
+                ~MainWindow();
 };
 
 

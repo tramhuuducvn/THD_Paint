@@ -23,6 +23,15 @@ MainWindow::MainWindow(){
         this->resize(700, 700);
 }
 
+MainWindow::~MainWindow(){
+        QFile *f1 = new  QFile("history/1");
+        QFile *f2 = new  QFile("history/2");
+        QFile *f3 = new  QFile("history/3");
+        f1->remove();
+        f2->remove();
+        f3->remove();
+}
+
 void MainWindow::closeEvent(QCloseEvent *event) {
         if(maybeSave()) {
                 event->accept();
@@ -54,7 +63,7 @@ void MainWindow::penColor(){
         QColor newColor = QColorDialog::getColor(paintArea->getPenColor());
 
         if (newColor.isValid()) {
-                paintArea->setPenColor(newColor);
+                this->paintArea->setPenColor(newColor);
                 this->colorButton->setPalette(QPalette(newColor));
         }
 }
@@ -65,7 +74,7 @@ void MainWindow::penWidth(){
         int newWidth = QInputDialog::getInt(this, tr("Customize Paint Width"), tr("Select pen width:"), paintArea->getPenWidth(), 1, 50, 1, &ok);
 
         if(ok == true) {
-                paintArea->setPenWidth(newWidth);
+                this->paintArea->setPenWidth(newWidth);
                 this->widthCb->setCurrentIndex(newWidth - 1);
         }
 }
@@ -133,6 +142,31 @@ void MainWindow::ellipse() {
 void MainWindow::about(){
         QMessageBox::about(this, tr("About me"), tr("<p><center> 19120484_Trầm Hữu Đức </center></p>"));
 }
+
+void MainWindow::undo(){
+        int k = this->paintArea->getStep();
+        if(k > 1 && k < 4){
+                k -= 1;
+                QString fileName = "history/" + QString::number(k);
+                this->paintArea->openImage(fileName);
+                this->paintArea->setStep(k);
+        }
+}
+
+void MainWindow::redo(){
+        int k = this->paintArea->getStep();
+        if(k > 0 && k < 3){
+                k += 1;
+                QString fileName = "history/" + QString::number(k);
+                QFile *file = new QFile(fileName);
+                if(file != NULL){
+                        this->paintArea->openImage(fileName);
+                        this->paintArea->setStep(k);
+                }
+        }
+}
+
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void MainWindow::createActions() {
@@ -240,7 +274,15 @@ void MainWindow::createToolBar(){
         this->toolbar->addWidget(this->ellipseButton);
         connect(this->ellipseButton, &QPushButton::clicked, this, &MainWindow::ellipse);
 
+        this->toolbar->addSeparator();
+        this->toolbar->addSeparator();
 
+        this->undoAct = new QAction(QIcon("img/undo_icon.png"), "undo");
+        this->redoAct = new QAction(QIcon("img/redo_icon.png"), "redo");
+        connect(this->undoAct, SIGNAL(triggered()), this, SLOT(undo()));
+        connect(this->redoAct, SIGNAL(triggered()), this, SLOT(redo()));
+        this->toolbar->addAction(this->undoAct);
+        this->toolbar->addAction(this->redoAct);
         //---------------------------------------------------------------------------------------------------------------------
         this->addToolBar(Qt::ToolBarArea::TopToolBarArea, this->toolbar);
         this->toolbar->show();
