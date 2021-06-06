@@ -9,15 +9,6 @@
 
 #include "PaintArea.h"
 
-int min(int x, int y){
-        return (x < y) ? x : y;
-}
-
-int max(int x, int y){
-        return (x > y) ? x : y;
-}
-
-
 PaintArea::PaintArea(QWidget *parent) : QWidget(parent) {
         setAttribute(Qt::WA_StaticContents);
         this->setFocusPolicy(Qt::StrongFocus);
@@ -29,6 +20,7 @@ PaintArea::PaintArea(QWidget *parent) : QWidget(parent) {
         holdingS = false;
         holdingA = false;
         holdingD = false;
+        shifting = false;
 
         isdrawLine = true;
         isdrawRect = false;
@@ -39,38 +31,7 @@ PaintArea::PaintArea(QWidget *parent) : QWidget(parent) {
 }
 
 void PaintArea::drawLine(const QPoint &endPoint){
-        QPoint target = QPoint(endPoint.x(), endPoint.y());
-
-        if(this->holdingW){
-                target.setY(curPoint.y());
-        }        
-        else if(this->holdingS){
-                target.setX(curPoint.x());
-        }
-        else if(this->holdingA){
-                int x = ( target.x() - target.y() + originPoint.x() + originPoint.y() ) / 2;
-                int y = ( -target.x() + target.y() + originPoint.x() + originPoint.y() ) / 2 ;
-                target.setX(x);
-                target.setY(y);
-        }
-        else if(this->holdingD){
-                int x = ( target.x() + target.y() + originPoint.x() - originPoint.y() ) / 2;
-                int y = ( target.x() + target.y() - originPoint.x() + originPoint.y() ) / 2 ;
-                target.setX(x);
-                target.setY(y);
-        }
-
-        QPainter painter(&image);
-        painter.setPen(QPen(penColor, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-        painter.drawLine(curPoint, target);
-        modified = true;
-        int rad = penWidth/2 + 2;
-        update(QRect(curPoint, target).normalized().adjusted(-rad, -rad, rad, rad));
-        curPoint = target;
-}
-
-void PaintArea::drawRect(const QPoint &endPoint){
-        QPoint target = QPoint(endPoint.x(), endPoint.y());
+        target = QPoint(endPoint.x(), endPoint.y());
 
         if(this->holdingW){
                 target.setY(curPoint.y());
@@ -100,35 +61,40 @@ void PaintArea::drawRect(const QPoint &endPoint){
         curPoint = target;
 }
 
-void PaintArea::drawEllipse(const QPoint &endPoint){
-        QPoint target = QPoint(endPoint.x(), endPoint.y());
-
-        if(this->holdingW){
-                target.setY(curPoint.y());
-        }
-        else if(this->holdingS){
-                target.setX(curPoint.x());
-        }
-        else if(this->holdingA){
-                int x = ( target.x() - target.y() + originPoint.x() + originPoint.y() ) / 2;
-                int y = ( -target.x() + target.y() + originPoint.x() + originPoint.y() ) / 2 ;
-                target.setX(x);
-                target.setY(y);
-        }
-        else if(this->holdingD){
-                int x = ( target.x() + target.y() + originPoint.x() - originPoint.y() ) / 2;
-                int y = ( target.x() + target.y() - originPoint.x() + originPoint.y() ) / 2 ;
-                target.setX(x);
-                target.setY(y);
-        }
+void PaintArea::drawRect(const QPoint &beginPoint, const QPoint &endPoint){
+        int x1 = beginPoint.x();
+        int y1 = beginPoint.y();
+        int x2 = endPoint.x();
+        int y2 = endPoint.y();
 
         QPainter painter(&image);
-        painter.setPen(QPen(penColor, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-        painter.drawLine(curPoint, target);
+        painter.setPen(penColor);
+        if((x2 - x1) * (y2 - y1) > 0 ){
+                painter.drawRect( x1, y1, x2 - x1, y2 - y1);
+        }
+        else{
+                 painter.drawRect( x2, y2, x1 - x2, y1 - y2);
+        }
         modified = true;
-        int rad = penWidth/2 + 2;
-        update(QRect(curPoint, target).normalized().adjusted(-rad, -rad, rad, rad));
-        curPoint = target;
+        update();
+}
+
+void PaintArea::drawEllipse(const QPoint &beginPoint, const QPoint &endPoint){
+        int x1 = beginPoint.x();
+        int y1 = beginPoint.y();
+        int x2 = endPoint.x();
+        int y2 = endPoint.y();
+
+        QPainter painter(&image);
+        painter.setPen(penColor);
+        if((x2 - x1) * (y2 - y1) > 0 ){
+                painter.drawEllipse(x1, y1, x2 - x1, y2 - y1);
+        }
+        else{
+                 painter.drawEllipse( x2, y2, x1 - x2, y1 - y2);
+        }
+        modified = true;
+        update();
 }
 
 void PaintArea::resizeImage(QImage *image, const QSize &size){
@@ -164,7 +130,14 @@ void PaintArea::mouseMoveEvent(QMouseEvent *event){
                         this->drawLine(event->pos());
                 }
                 else{
-                        this->selectionTool->setGeometry(QRect(this->originPoint, event->pos()).normalized());
+                        target = event->pos();
+                        if(shifting){
+                                int x = ( target.x() + target.y() + originPoint.x() - originPoint.y() ) / 2;
+                                int y = ( target.x() + target.y() - originPoint.x() + originPoint.y() ) / 2 ;
+                                target.setX(x);
+                                target.setY(y);
+                        }
+                        this->selectionTool->setGeometry(QRect(this->originPoint, target));
                 }
         }
 }
@@ -175,11 +148,12 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event){
                         this->drawLine(event->pos());
                  }
                 else if(this->isdrawRect){
-                        this->drawRect(event->pos());
+                        this->drawRect(this->originPoint, target);
                 }
                 if(this->isdrawEllipse){
-                        this->drawEllipse(event->pos());
+                        this->drawEllipse(this->originPoint, target);
                 }
+
                 if(this->isdrawLine == false){
                         this->selectionTool->close();
                         this->selectionTool = NULL;
@@ -190,32 +164,38 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event){
 
 void PaintArea::keyPressEvent(QKeyEvent *event){
         if(event->key() == Qt::Key_W){
-                holdingW = true;
+                this->holdingW = true;
         }
         else if(event->key() == Qt::Key_S){
-                 holdingS = true;
+                 this->holdingS = true;
         }
         else if(event->key() == Qt::Key_A){
-                 holdingA = true;
+                 this->holdingA = true;
         }
         else if(event->key() == Qt::Key_D){
-                 holdingD = true;
+                 this->holdingD = true;
+        }
+        else if(event->key() == Qt::Key_Shift){
+                this->shifting = true;
         }
 }
 
 
 void PaintArea::keyReleaseEvent(QKeyEvent *event){
         if(event->key() == Qt::Key_W){
-                holdingW = false;
+                this->holdingW = false;
         }
         else if(event->key() == Qt::Key_S){
-                 holdingS = false;
+                 this->holdingS = false;
         }
         else if(event->key() == Qt::Key_A){
-                 holdingA = false;
+                 this->holdingA = false;
         }
         else if(event->key() == Qt::Key_D){
-                 holdingD = false;
+                 this->holdingD = false;
+        }
+        else if(event->key() == Qt::Key_Shift){
+                this->shifting = false;
         }
 }
 

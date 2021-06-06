@@ -17,6 +17,7 @@ class PaintArea : public QWidget {
                 bool holdingS;
                 bool holdingA;
                 bool holdingD;
+                bool shifting;
 
                 bool isdrawLine;
                 bool isdrawRect;
@@ -27,11 +28,12 @@ class PaintArea : public QWidget {
                 QImage image;
                 QPoint curPoint;
                 QPoint originPoint;
+                QPoint target;
                 SelectionTool *selectionTool;
 
                 void drawLine(const QPoint& endPoint);
-                void drawRect(const QPoint& endPoint);
-                void drawEllipse(const QPoint& endPoint);
+                void drawRect(const QPoint &beginPoint, const QPoint& endPoint);
+                void drawEllipse(const QPoint &beginPoint, const QPoint& endPoint);
                 void resizeImage(QImage *image, const QSize &size);
 
         protected:
