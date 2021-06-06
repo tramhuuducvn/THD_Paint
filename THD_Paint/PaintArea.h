@@ -11,9 +11,11 @@ class PaintArea : public QWidget {
 
         private:
                 bool modified;
-                QColor penColor;
-                int penWidth;
                 bool isdrawing;
+                bool shifting;
+
+                QColor penColor;
+                int penWidth;                
                 QImage image;
                 QPoint curPoint;
 
@@ -24,6 +26,10 @@ class PaintArea : public QWidget {
                 void mousePressEvent(QMouseEvent *event) override;
                 void mouseMoveEvent(QMouseEvent *event) override;
                 void mouseReleaseEvent(QMouseEvent* event) override;
+
+                void keyPressEvent(QKeyEvent *event) override;
+                void keyReleaseEvent(QKeyEvent *event) override;
+
                 void paintEvent(QPaintEvent *event) override;
                 void resizeEvent(QResizeEvent *event) override;
 

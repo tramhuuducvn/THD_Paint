@@ -166,7 +166,7 @@ void MainWindow::createActions() {
 void MainWindow::createMenus() {
         saveAsMenu = new QMenu(tr("Save As"), this);
         foreach (QAction *action, saveAsActs) {
-        saveAsMenu->addAction(action);
+                saveAsMenu->addAction(action);
         }
         // File Menu
         fileMenu = new QMenu(tr("File"), this);

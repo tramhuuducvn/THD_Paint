@@ -11,23 +11,30 @@
 
 PaintArea::PaintArea(QWidget *parent) : QWidget(parent) {
         setAttribute(Qt::WA_StaticContents);
+        this->setFocusPolicy(Qt::StrongFocus);
 
         modified = false;
         isdrawing =false;
+        shifting = false;
         penWidth = 7;
         penColor = Qt::green;
 }
 
 void PaintArea::drawLine(const QPoint &endPoint){
+        QPoint target = QPoint(endPoint.x(), endPoint.y());
+        if(this->shifting){
+                target.setY(curPoint.y());
+        }
+
         QPainter painter(&image);
         painter.setPen(QPen(penColor, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-        painter.drawLine(curPoint, endPoint);
+        painter.drawLine(curPoint, target);
         modified = true;
         int rad = penWidth/2 + 2;
 
-        update(QRect(curPoint, endPoint).normalized().adjusted(-rad, -rad, rad, rad));
+        update(QRect(curPoint, target).normalized().adjusted(-rad, -rad, rad, rad));
 
-        curPoint = endPoint;
+        curPoint = target;
 }
 
 void PaintArea::resizeImage(QImage *image, const QSize &size){
@@ -61,6 +68,20 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event){
                 this->isdrawing  = false;
         }
 }
+
+void PaintArea::keyPressEvent(QKeyEvent *event){
+        if(event->key() == Qt::Key_Shift){
+                shifting = true;              
+        }
+}
+
+
+void PaintArea::keyReleaseEvent(QKeyEvent *event){
+        if(event->key() == Qt::Key_Shift){
+                shifting = false;
+        }
+}
+
 
 void PaintArea::paintEvent(QPaintEvent *event){
         QPainter painter(this);
