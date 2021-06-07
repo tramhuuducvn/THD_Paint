@@ -285,10 +285,15 @@ void MainWindow::createToolBar(){
 
         this->undoAct = new QAction(QIcon("img/undo_icon.png"), "undo");
         this->redoAct = new QAction(QIcon("img/redo_icon.png"), "redo");
+        this->undoAct->setShortcut(tr("Ctrl+Z"));
+        this->redoAct->setShortcut(tr("Ctrl+Y"));
+
         connect(this->undoAct, SIGNAL(triggered()), this, SLOT(undo()));
         connect(this->redoAct, SIGNAL(triggered()), this, SLOT(redo()));
         this->toolbar->addAction(this->undoAct);
         this->toolbar->addAction(this->redoAct);
+
+
         //---------------------------------------------------------------------------------------------------------------------
         this->addToolBar(Qt::ToolBarArea::TopToolBarArea, this->toolbar);
         this->toolbar->show();
