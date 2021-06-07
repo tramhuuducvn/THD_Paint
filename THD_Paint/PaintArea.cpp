@@ -9,6 +9,8 @@
 
 #include "PaintArea.h"
 
+#define MAX 10
+
 PaintArea::PaintArea(QWidget *parent) : QWidget(parent) {
         setAttribute(Qt::WA_StaticContents);
         this->setFocusPolicy(Qt::StrongFocus);
@@ -330,15 +332,27 @@ int PaintArea::getStep(){
 int PaintArea::historyDraw(){
         this->step += 1;
 
-        if(this->step > 3){
+        for(int i = this->step; i < MAX; ++i){
+                QString fn = "history/" + QString::number(i + 1);
+                QFile *f = new  QFile(fn);
+                if(f != NULL){
+                        f->remove(fn);
+                }
+        }
+
+        if(this->step > MAX){
                 QFile *f1 = new  QFile("history/1");
                 if(f1 != NULL){
                         f1->remove();
                 }
-               QFile *f2 = new  QFile("history/2");
-               QFile *f3 = new  QFile("history/3");
-               f2->rename("history/1");
-               f3->rename("history/2");
+
+                for(int i = 2; i <= MAX; ++i){
+                        QString fn = "history/" + QString::number(i);
+                        QFile *f = new  QFile(fn);
+                        fn = "history/" + QString::number(i - 1);
+                        f->rename(fn);
+                }
+
                this->step -= 1;
         }
 

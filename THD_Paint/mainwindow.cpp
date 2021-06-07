@@ -2,6 +2,7 @@
 
 #include "mainwindow.h"
 #include "PaintArea.h"
+#define MAX 10
 
 QColor c = QColor(239, 204, 153);
 QColor w = QColor(255, 255, 255);
@@ -24,12 +25,13 @@ MainWindow::MainWindow(){
 }
 
 MainWindow::~MainWindow(){
-        QFile *f1 = new  QFile("history/1");
-        QFile *f2 = new  QFile("history/2");
-        QFile *f3 = new  QFile("history/3");
-        f1->remove();
-        f2->remove();
-        f3->remove();
+        for(int i = 0; i < MAX; ++i){
+                QString fn = "history/" + QString::number(i + 1);
+                QFile *f = new  QFile(fn);
+                if(f != NULL){
+                        f->remove(fn);
+                }
+        }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -107,6 +109,10 @@ void MainWindow::eraser() {
         this->eraserButton->setPalette(QPalette(c));
         this->rectangleButton->setPalette(QPalette(w));
         this->ellipseButton->setPalette(QPalette(w));
+
+        this->paintArea->setDrawLine(true);
+        this->paintArea->setDrawRect(false);
+        this->paintArea->setDrawEllipse(false);
 }
 
 void MainWindow::rectangle() {
@@ -145,7 +151,7 @@ void MainWindow::about(){
 
 void MainWindow::undo(){
         int k = this->paintArea->getStep();
-        if(k > 1 && k < 4){
+        if(k > 1 && k < MAX + 1){
                 k -= 1;
                 QString fileName = "history/" + QString::number(k);
                 this->paintArea->openImage(fileName);
@@ -155,7 +161,7 @@ void MainWindow::undo(){
 
 void MainWindow::redo(){
         int k = this->paintArea->getStep();
-        if(k > 0 && k < 3){
+        if(k > 0 && k < MAX){
                 k += 1;
                 QString fileName = "history/" + QString::number(k);
                 QFile *file = new QFile(fileName);
